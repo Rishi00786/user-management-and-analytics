@@ -1,3 +1,4 @@
+import React from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -26,7 +27,7 @@ const LoginPage = () => {
         setError("Invalid username or password");
       }
     } catch (err) {
-      setError("Unable to connect to the server. Please try again later.",err);
+      console.error("Unable to connect to the server. Please try again later.",err);
     }
   };
 

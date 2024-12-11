@@ -1,14 +1,21 @@
 /* eslint-disable react/prop-types */
-/* eslint-disable react-hooks/rules-of-hooks */
-import { useState } from "react";
-import { useSelector } from "react-redux";
-import { FaUsers, FaUserCheck, FaUserTimes } from "react-icons/fa";
-import { Bar, Line, Pie } from "react-chartjs-2";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, LineElement, PointElement } from "chart.js";
+import React, { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { FaUsers, FaUserCheck, FaUserTimes } from 'react-icons/fa';
+import { Bar, Line, Pie } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, LineElement, PointElement } from 'chart.js';
+import { RootState, AppDispatch } from '../../../redux/store.ts';
+import { setFilteredUsers } from '../../../redux/Slices/analyticsSlice.ts';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, LineElement, PointElement);
 
-const Box = ({ number, info, icon }) => {
+interface BoxProps {
+  number: number;
+  info: string;
+  icon: React.ReactNode;
+}
+
+const Box = ({ number, info, icon }: BoxProps) => {
   return (
     <div className="md:w-52 sm:w-36 w-[70vw] sm:h-24 h-16 bg-white flex items-center justify-center sm:gap-2 gap-1 shadow-lg rounded-md">
       <div className="sm:text-2xl text-xl text-blue-500">{icon}</div>
@@ -20,40 +27,41 @@ const Box = ({ number, info, icon }) => {
   );
 };
 
-const Analytics = () => {
-  const { allUsers, deletedUsers } = useSelector((state) => state.users);
+const Analytics: React.FC = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const { filteredUsers } = useSelector((state: RootState) => state.analytics);
+  const { allUsers, deletedUsers } = useSelector((state: RootState) => state.users);
 
-  const [startMonth, setStartMonth] = useState("July");
-  const [endMonth, setEndMonth] = useState("December");
-  const [selectedRegion, setSelectedRegion] = useState("");
-  const [filteredUsers, setFilteredUsers] = useState(allUsers);
 
-  const monthMapping = {
-    "January": 1,
-    "February": 2,
-    "March": 3,
-    "April": 4,
-    "May": 5,
-    "June": 6,
-    "July": 7,
-    "August": 8,
-    "September": 9,
-    "October": 10,
-    "November": 11,
-    "December": 12,
+  const [startMonth, setStartMonth] = useState<string>('July');
+  const [endMonth, setEndMonth] = useState<string>('December');
+  const [selectedRegion, setSelectedRegion] = useState<string>('');
+
+  const monthMapping: { [key: string]: number } = {
+    January: 1,
+    February: 2,
+    March: 3,
+    April: 4,
+    May: 5,
+    June: 6,
+    July: 7,
+    August: 8,
+    September: 9,
+    October: 10,
+    November: 11,
+    December: 12,
   };
 
   const filterData = () => {
     let users = allUsers;
-    // console.log(users)
+    console.log(users)
 
     if (startMonth && endMonth) {
       const startMonthNumber = monthMapping[startMonth];
       const endMonthNumber = monthMapping[endMonth];
 
       users = users.filter((user) => {
-        const userMonth = monthMapping[user.createdAt]
-        console.log(userMonth)
+        const userMonth = monthMapping[user.createdAt];
         return userMonth >= startMonthNumber && userMonth <= endMonthNumber;
       });
     }
@@ -62,8 +70,12 @@ const Analytics = () => {
       users = users.filter((user) => user.location === selectedRegion);
     }
 
-    setFilteredUsers(users);
+    dispatch(setFilteredUsers(users));
   };
+
+  useEffect(() => {
+    filterData();
+  }, [startMonth, endMonth, selectedRegion, allUsers, dispatch]);
 
   const totalUsers = filteredUsers.length;
   const activeUsers = filteredUsers.filter((user) => user.status).length;
@@ -72,43 +84,30 @@ const Analytics = () => {
   const registrationData = filteredUsers.reduce((acc, user) => {
     const monthNumber = monthMapping[user.createdAt];
     if (monthNumber) {
-      const monthName = new Date(2024, monthNumber - 1).toLocaleString("default", { month: "short" });
+      const monthName = new Date(2024, monthNumber - 1).toLocaleString('default', { month: 'short' });
       acc[monthName] = (acc[monthName] || 0) + 1;
     }
     return acc;
   }, {});
 
-  const currentMonth = new Date().getMonth(); // 0-based (0 = January)
-  const lastSixMonths = [];
+  const currentMonth = new Date().getMonth();
+  // console.log(currentMonth)
+  const lastSixMonths: string[] = [];
   for (let i = 5; i >= 0; i--) {
     const monthIndex = (currentMonth - i + 12) % 12;
-    lastSixMonths.push(new Date(2024, monthIndex).toLocaleString("default", { month: "short" }));
+    // console.log(monthIndex)
+    lastSixMonths.push(new Date(2024, monthIndex, 1).toLocaleString('default', { month: 'short' }));
+    // console.log(lastSixMonths)
   }
-  console.log(lastSixMonths)
-
-  // const registrationTrendData = {
-  //   labels: lastSixMonths,
-  //   datasets: [
-  //     {
-  //       label: "User Registrations",
-  //       data: lastSixMonths.map((month) => registrationData[month] || 0),
-  //       borderColor: "#4bc0c0",
-  //       backgroundColor: "rgba(75, 192, 192, 0.2)",
-  //       tension: 0.4,
-  //     },
-  //   ],
-  // };
-
-
 
   const trendLabels = (() => {
     const startMonthNumber = monthMapping[startMonth];
     const endMonthNumber = monthMapping[endMonth];
-    const labels = [];
+    const labels: string[] = [];
 
     for (let i = startMonthNumber; i <= endMonthNumber; i++) {
-      const monthIndex = (i - 1) % 12; // Adjust to 0-based month
-      labels.push(new Date(2024, monthIndex).toLocaleString("default", { month: "short" }));
+      const monthIndex = (i - 1) % 12;
+      labels.push(new Date(2024, monthIndex).toLocaleString('default', { month: 'short' }));
     }
 
     return labels;
@@ -116,28 +115,26 @@ const Analytics = () => {
 
   const trendData = trendLabels.map((month) => registrationData[month] || 0);
 
-
   const registrationTrendData = {
     labels: trendLabels,
     datasets: [
       {
-        label: "User Registrations",
+        label: 'User Registrations',
         data: trendData,
-        borderColor: "#4bc0c0",
-        backgroundColor: "rgba(75, 192, 192, 0.2)",
+        borderColor: '#4bc0c0',
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
         tension: 0.4,
       },
     ],
   };
 
-
   const activeVsInactiveData = {
-    labels: ["Active Users", "Inactive Users"],
+    labels: ['Active Users', 'Inactive Users'],
     datasets: [
       {
-        label: "Users",
+        label: 'Users',
         data: [activeUsers, inactiveUsers],
-        backgroundColor: ["#33FF57", "#FF5733"],
+        backgroundColor: ['#33FF57', '#FF5733'],
       },
     ],
   };
@@ -151,29 +148,45 @@ const Analytics = () => {
     labels: Object.keys(regionData),
     datasets: [
       {
-        label: "Users by Region",
+        label: 'Users by Region',
         data: Object.values(regionData),
-        backgroundColor: ["#FF5733", "#33FF57", "#5733FF", "#FF33A1"],
+        backgroundColor: ['#FF5733', '#33FF57', '#5733FF', '#FF33A1'],
       },
     ],
   };
 
-  const chartOptions = {
+  const chartOptions: {
+    responsive: boolean;
+    plugins: {
+      legend: {
+        position: 'top' | 'center' | 'left' | 'right' | 'bottom' | 'chartArea';
+      };
+    };
+    scales: {
+      x: {
+        type: 'category';
+      };
+      y: {
+        beginAtZero: boolean;
+      };
+    };
+  } = {
     responsive: true,
     plugins: {
       legend: {
-        position: "top",
+        position: 'top',
       },
     },
     scales: {
       x: {
-        type: "category",
+        type: 'category',
       },
       y: {
         beginAtZero: true,
       },
     },
   };
+
 
   const regions = Array.from(new Set(allUsers.map((user) => user.location)));
 
@@ -232,7 +245,6 @@ const Analytics = () => {
           Filter
         </button>
       </div>
-
 
       <div className="sm:flex-row flex flex-col items-center justify-center gap-8 mt-8">
         <Box number={totalUsers} info="Total Users" icon={<FaUsers />} />

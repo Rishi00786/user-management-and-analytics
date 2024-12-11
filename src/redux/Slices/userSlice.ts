@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-// Define the initial state and types
+
 interface User {
     id: string;
     username: string;
@@ -24,7 +24,6 @@ const initialState: UserState = {
     loading: false,
 };
 
-// Create a slice of state for users
 const userSlice = createSlice({
     name: 'users',
     initialState,
@@ -36,10 +35,9 @@ const userSlice = createSlice({
             state.allUsers = action.payload;
         },
         deleteUser(state, action: PayloadAction<string>) {
-            // Remove deleted user from the `users` array
             state.users = state.users.filter((user) => user.id !== action.payload);
             state.allUsers = state.allUsers.filter((user) => user.id !== action.payload);
-            state.deletedUsers += 1; // Increment deleted users count
+            state.deletedUsers += 1;
         },
         setLoading(state, action: PayloadAction<boolean>) {
             state.loading = action.payload;
@@ -47,8 +45,6 @@ const userSlice = createSlice({
     },
 });
 
-// Export actions
-export const { setUsers, setAllUsers, deleteUser, setLoading } = userSlice.actions;
 
-// Export the reducer
+export const { setUsers, setAllUsers, deleteUser, setLoading } = userSlice.actions;
 export default userSlice.reducer;

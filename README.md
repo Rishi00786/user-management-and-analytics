@@ -2,6 +2,8 @@
 
 This project is a dynamic and analytics dashboard built using React.js, Redux, TypeScript, and API integration with Redux Thunk. It includes features for user management and analytics visualization.
 
+## Link: **https://user-management-and-analytics.vercel.app**
+
 ## Instructions to Run the Project
 
 1. **Clone the Repository**

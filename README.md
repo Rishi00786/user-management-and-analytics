@@ -4,6 +4,11 @@ This project is a dynamic and analytics dashboard built using React.js, Redux, T
 
 ## Link: **https://user-management-and-analytics.vercel.app**
 
+### Login Credentials:
+- **username** : Angeline_Hudson
+- **password** : 1Sb0opyadMYMf0b 
+
+
 ## Instructions to Run the Project
 
 1. **Clone the Repository**

@@ -10,11 +10,11 @@ ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarEle
 
 const Box = ({ number, info, icon }) => {
   return (
-    <div className="w-52 h-24 bg-white flex items-center justify-center gap-2 shadow-lg rounded-md">
-      <div className="text-2xl text-blue-500">{icon}</div>
+    <div className="md:w-52 sm:w-36 w-[70vw] sm:h-24 h-16 bg-white flex items-center justify-center sm:gap-2 gap-1 shadow-lg rounded-md">
+      <div className="sm:text-2xl text-xl text-blue-500">{icon}</div>
       <div className="flex flex-col items-start justify-center">
-        <div className="text-xl font-bold">{number}</div>
-        <div className="text-sm text-gray-500 font-semibold">{info}</div>
+        <div className="sm:text-xl text-lg font-bold">{number}</div>
+        <div className="text-xs sm:text-sm text-gray-500 font-semibold">{info}</div>
       </div>
     </div>
   );
@@ -45,13 +45,15 @@ const Analytics = () => {
 
   const filterData = () => {
     let users = allUsers;
+    // console.log(users)
 
     if (startMonth && endMonth) {
       const startMonthNumber = monthMapping[startMonth];
       const endMonthNumber = monthMapping[endMonth];
 
       users = users.filter((user) => {
-        const userMonth = new Date(user.createdAt).getMonth() + 1;
+        const userMonth = monthMapping[user.createdAt]
+        console.log(userMonth)
         return userMonth >= startMonthNumber && userMonth <= endMonthNumber;
       });
     }
@@ -82,19 +84,52 @@ const Analytics = () => {
     const monthIndex = (currentMonth - i + 12) % 12;
     lastSixMonths.push(new Date(2024, monthIndex).toLocaleString("default", { month: "short" }));
   }
+  console.log(lastSixMonths)
+
+  // const registrationTrendData = {
+  //   labels: lastSixMonths,
+  //   datasets: [
+  //     {
+  //       label: "User Registrations",
+  //       data: lastSixMonths.map((month) => registrationData[month] || 0),
+  //       borderColor: "#4bc0c0",
+  //       backgroundColor: "rgba(75, 192, 192, 0.2)",
+  //       tension: 0.4,
+  //     },
+  //   ],
+  // };
+
+
+
+  const trendLabels = (() => {
+    const startMonthNumber = monthMapping[startMonth];
+    const endMonthNumber = monthMapping[endMonth];
+    const labels = [];
+
+    for (let i = startMonthNumber; i <= endMonthNumber; i++) {
+      const monthIndex = (i - 1) % 12; // Adjust to 0-based month
+      labels.push(new Date(2024, monthIndex).toLocaleString("default", { month: "short" }));
+    }
+
+    return labels;
+  })();
+
+  const trendData = trendLabels.map((month) => registrationData[month] || 0);
+
 
   const registrationTrendData = {
-    labels: lastSixMonths,
+    labels: trendLabels,
     datasets: [
       {
         label: "User Registrations",
-        data: lastSixMonths.map((month) => registrationData[month] || 0),
+        data: trendData,
         borderColor: "#4bc0c0",
         backgroundColor: "rgba(75, 192, 192, 0.2)",
         tension: 0.4,
       },
     ],
   };
+
 
   const activeVsInactiveData = {
     labels: ["Active Users", "Inactive Users"],
@@ -144,15 +179,15 @@ const Analytics = () => {
 
   return (
     <div className="w-[100vw] flex flex-col items-center justify-start gap-12 bg-slate-200 min-h-[100vh] py-12">
-      <h1 className="text-3xl font-bold text-gray-700">Analytics Dashboard</h1>
+      <h1 className="text-xl sm:text-3xl font-bold text-gray-700">Analytics Dashboard</h1>
 
-      <div className="flex gap-8">
-        <div>
+      <div className="flex flex-col gap-4 sm:flex-row sm:gap-8">
+        <div className="flex-1 sm:w-full w-[70vw]">
           <label className="block text-sm font-medium text-gray-700">Start Month</label>
           <select
             value={startMonth}
             onChange={(e) => setStartMonth(e.target.value)}
-            className="p-2 border rounded"
+            className="p-2 border rounded w-full"
           >
             {Object.keys(monthMapping).map((month) => (
               <option key={month} value={month}>
@@ -161,12 +196,12 @@ const Analytics = () => {
             ))}
           </select>
         </div>
-        <div>
+        <div className="flex-1 sm:w-full w-[70vw]">
           <label className="block text-sm font-medium text-gray-700">End Month</label>
           <select
             value={endMonth}
             onChange={(e) => setEndMonth(e.target.value)}
-            className="p-2 border rounded"
+            className="p-2 border rounded w-full"
           >
             {Object.keys(monthMapping).map((month) => (
               <option key={month} value={month}>
@@ -175,12 +210,12 @@ const Analytics = () => {
             ))}
           </select>
         </div>
-        <div>
+        <div className="flex-1 sm:w-full w-[70vw]">
           <label className="block text-sm font-medium text-gray-700">Region</label>
           <select
             value={selectedRegion}
             onChange={(e) => setSelectedRegion(e.target.value)}
-            className="p-2 border rounded"
+            className="p-2 border rounded w-full"
           >
             <option value="">All Regions</option>
             {regions.map((region) => (
@@ -192,13 +227,14 @@ const Analytics = () => {
         </div>
         <button
           onClick={filterData}
-          className="px-4 py-2 bg-blue-500 text-white rounded-md"
+          className="px-4 py-2 bg-blue-500 text-white rounded-md self-start sm:self-center"
         >
           Filter
         </button>
       </div>
 
-      <div className="flex items-center justify-center gap-8 mt-8">
+
+      <div className="sm:flex-row flex flex-col items-center justify-center gap-8 mt-8">
         <Box number={totalUsers} info="Total Users" icon={<FaUsers />} />
         <Box number={activeUsers} info="Active Users" icon={<FaUserCheck />} />
         <Box number={deletedUsers} info="Deleted Users" icon={<FaUserTimes />} />

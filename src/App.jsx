@@ -1,7 +1,7 @@
 import LoginPage from "./components/Auth/Login"
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Dashboard from "./components/Dashboard/Users/Dashboard";
-import Analytics from "./components/Dashboard/Analytics/Analytics";
+import Dashboard from "./components/Dashboard/Users/Dashboard.tsx";
+import Analytics from "./components/Dashboard/Analytics/Analytics.tsx";
 
 
 function App() {
